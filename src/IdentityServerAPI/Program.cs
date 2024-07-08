@@ -1,30 +1,27 @@
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Test;
 using DuendeIdentityServerFromScratch.TestData;
 using DuendeInMemoryTemplate;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddIdentityServer(options =>
-{
-    options.Events.RaiseErrorEvents = true;
-    options.Events.RaiseInformationEvents = true;
-    options.Events.RaiseFailureEvents = true;
-    options.Events.RaiseSuccessEvents = true;
+builder.Services.AddRazorPages();
 
-    options.EmitStaticAudienceClaim = true;
-}).AddTestUsers(TestUsers.Users)
-  .AddInMemoryClients(Config.Clients)
-  .AddInMemoryApiResources(Config.ApiResources)
+builder.Services.AddIdentityServer()
+  .AddInMemoryIdentityResources(Config.IdentityResources)
   .AddInMemoryApiScopes(Config.ApiScopes)
-  .AddInMemoryIdentityResources(Config.IdentityResources);
+  .AddInMemoryClients(Config.Clients)
+  .AddTestUsers(TestUsers.Users);
 
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+
+app.UseRouting();
+
 app.UseIdentityServer();
 
-app.MapGet("/", () => "Hello World!");
+app.UseAuthorization();
+app.MapRazorPages().RequireAuthorization();
 
 app.Run();

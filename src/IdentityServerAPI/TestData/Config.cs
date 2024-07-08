@@ -46,21 +46,21 @@ public static class Config
             // interactive client using code flow + pkce
             new Client
             {
-                ClientId = "interactive",
+                ClientId = "mvc",
+                ClientSecrets = { new Secret("49C1A7E1-0C79-4A89-A3D6-A37998FB86B0".Sha256()) },
 
                 AllowedGrantTypes = GrantTypes.Code,
-                ClientSecrets = { new Secret("49C1A7E1-0C79-4A89-A3D6-A37998FB86B0".Sha256()) },
-                    
 
                 RedirectUris = { "https://localhost:7057/signin-oidc" },
+
                 PostLogoutRedirectUris = { "https://localhost:7057/signout-callback-oidc" },
-                FrontChannelLogoutUri = "https://localhost:7057/signout-oidc",
+
+                //FrontChannelLogoutUri = "https://localhost:7057/signout-oidc",
 
                 AllowedScopes = 
                 { 
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
-                    IdentityServerConstants.StandardScopes.Email,
                     "office.api", 
                 }
             },
