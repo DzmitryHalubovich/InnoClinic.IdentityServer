@@ -1,5 +1,6 @@
 ﻿using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
+using static System.Net.WebRequestMethods;
 
 namespace DuendeInMemoryTemplate;
 
@@ -15,14 +16,14 @@ public static class Config
     public static IEnumerable<ApiScope> ApiScopes =>
         new ApiScope[]
         {
-            new ApiScope("office.api"),
+            new ApiScope("offices.api"),
         };
 
     public static IEnumerable<ApiResource> ApiResources => new[]
     {
         new ApiResource("officeApi")
         {
-            Scopes = new List<string> { "office.api" },
+            Scopes = new List<string> { "offices.api" },
             ApiSecrets = new List<Secret> { new Secret("ScopeSecret".Sha256()) },
             UserClaims = new List<string> { "role" }
         }
@@ -64,5 +65,36 @@ public static class Config
                     "office.api", 
                 }
             },
+            new Client
+            {
+                ClientId = "mvc_client",
+
+                AllowedGrantTypes = GrantTypes.ClientCredentials,
+                ClientSecrets = { new Secret("secret".Sha256()) },
+
+                AllowedScopes = { "offices.api" }
+            },
+            new Client
+            {
+                ClientId = "interactive_web",
+                ClientName = "Interactive Web App",
+                AllowedGrantTypes = GrantTypes.Hybrid,
+
+                RequirePkce = false,
+                AllowRememberConsent = false,
+
+                RedirectUris = { "https://localhost:5003/signin-oidc" }, // client_url/signin-oidc
+
+                PostLogoutRedirectUris = { "https://localhost:5003/signout-callback-oidc" },
+
+                ClientSecrets = { new Secret("secret".Sha256()) },
+
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    "offices.api"
+                }
+            }
         };
 }
