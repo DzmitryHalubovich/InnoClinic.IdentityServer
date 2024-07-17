@@ -105,17 +105,28 @@ public class Index : PageModel
             if (Input.Username.Contains("@"))
             {
                 checkByEmail = true;
-                var emailPattern = @"[\w]+@[\w]+\.[a-zA-Z]{2,}$";
+                var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
                 var regex = new Regex(emailPattern);
 
                 if (!regex.IsMatch(Input.Username))
                 {
-                    ModelState.TryAddModelError("Email", "Invalid email");
+                    await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials"));
+                    ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
+                    await BuildModelAsync(Input.ReturnUrl);
                     return Page();
                 }
             }
 
             var foundedUser = checkByEmail ? await _userManager.FindByEmailAsync(Input.Username) : null;
+
+            if (foundedUser is null)
+            {
+                await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials"));
+                ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
+                await BuildModelAsync(Input.ReturnUrl);
+                return Page();
+            }
+
             var result = checkByEmail ? await _signInManager.PasswordSignInAsync(foundedUser, Input.Password!, Input.RememberLogin, lockoutOnFailure: true) 
                 : await _signInManager.PasswordSignInAsync(Input.Username!, Input.Password!, Input.RememberLogin, lockoutOnFailure: true);
 
