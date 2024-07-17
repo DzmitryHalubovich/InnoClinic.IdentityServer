@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdentityServerAspNetIdentity.Data.Migrations.IdentityServer.UsersDb
 {
     [DbContext(typeof(ApplicationUserDbContext))]
-    [Migration("20240710131323_InitialUsersIdentityDbMigration")]
-    partial class InitialUsersIdentityDbMigration
+    [Migration("20240717095115_Users")]
+    partial class Users
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,42 +92,19 @@ namespace IdentityServerAspNetIdentity.Data.Migrations.IdentityServer.UsersDb
                     b.HasData(
                         new
                         {
-                            Id = "8a517e7e-790a-45c0-83c9-7cd43921a34f",
+                            Id = "C4AB4EEC-4CDF-438E-961A-6AB0C2C3DD6D",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "3d7ea3c7-fd1f-45d5-bb1d-7ead3185eb33",
-                            Email = "AliceSmith@email.com",
+                            ConcurrencyStamp = "0798f66f-db85-415e-b20c-623384dc1e22",
+                            Email = "innoclinic.admin@mail.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
+                            NormalizedEmail = "INNOCLINIC.ADMIN@MAIL.COM",
+                            NormalizedUserName = "INNOCLINIC.ADMIN@MAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEEpLhA5bT/5TNVegr598s6uicfol2/W6FQlWghwDH6r6hT39GqrvCSGEZa4EoO5Og==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c7c338e6-ad1f-4a58-bafa-25d656efbb43",
+                            SecurityStamp = "086db738-6273-44e9-9ae3-f1ba6a368269",
                             TwoFactorEnabled = false,
-                            UserName = "Alice"
-                        },
-                        new
-                        {
-                            Id = "7c1ef2cc-53e5-4086-a82e-1d93482830c6",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "d76e0217-e723-4b75-8660-05a81049df22",
-                            Email = "BobAdams@mail.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "7cb39cd0-9415-4b14-bbdf-720a1ec4901f",
-                            TwoFactorEnabled = false,
-                            UserName = "Bob"
-                        },
-                        new
-                        {
-                            Id = "27160396-521d-49cc-a51b-1c2a3f6a4fa6",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "0ce789af-dfbc-4fed-ba55-ca8ad22fe025",
-                            Email = "MarkTrump@mail.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "854235d9-fa44-4c7e-8b36-91ce508b3c1c",
-                            TwoFactorEnabled = false,
-                            UserName = "Mark"
+                            UserName = "innoclinic.admin@mail.com"
                         });
                 });
 
@@ -160,19 +137,22 @@ namespace IdentityServerAspNetIdentity.Data.Migrations.IdentityServer.UsersDb
                     b.HasData(
                         new
                         {
-                            Id = "30544024-7940-4eb4-88d1-0635a0d9699c",
+                            Id = "FE2EBE31-6E9E-436F-A247-C431EC225231",
+                            ConcurrencyStamp = "FE2EBE31-6E9E-436F-A247-C431EC225231",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "21d43d33-1b99-48ab-8bec-29be89ce9c4f",
+                            Id = "80719001-2BCD-4043-A9A7-4290D59ED73C",
+                            ConcurrencyStamp = "80719001-2BCD-4043-A9A7-4290D59ED73C",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "6952d7b0-f213-49b4-a023-dc75577bdcc9",
+                            Id = "C500EDA0-6BEA-4222-8689-B3924C070CA2",
+                            ConcurrencyStamp = "C500EDA0-6BEA-4222-8689-B3924C070CA2",
                             Name = "Receptionist",
                             NormalizedName = "RECEPTIONIST"
                         });
@@ -263,6 +243,13 @@ namespace IdentityServerAspNetIdentity.Data.Migrations.IdentityServer.UsersDb
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "C4AB4EEC-4CDF-438E-961A-6AB0C2C3DD6D",
+                            RoleId = "C500EDA0-6BEA-4222-8689-B3924C070CA2"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>

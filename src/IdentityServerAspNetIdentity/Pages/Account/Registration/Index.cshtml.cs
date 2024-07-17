@@ -1,11 +1,11 @@
 using AutoMapper;
 using IdentityServerAspNetIdentity.Models;
 using IdentityServerAspNetIdentity.RabbitMQ;
+using InnoClinic.SharedModels.MQMessages.IdentityServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NotificationService.API;
 
 namespace IdentityServerAspNetIdentity.Pages.Account.Registration;
 

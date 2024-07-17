@@ -117,9 +117,9 @@ public class Index : PageModel
                 }
             }
 
-            var foundedUser = checkByEmail ? await _userManager.FindByEmailAsync(Input.Username) : null;
+            var existedUser = checkByEmail ? await _userManager.FindByEmailAsync(Input.Username) : null;
 
-            if (foundedUser is null)
+            if (checkByEmail && existedUser is null)
             {
                 await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials"));
                 ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
@@ -127,12 +127,12 @@ public class Index : PageModel
                 return Page();
             }
 
-            var result = checkByEmail ? await _signInManager.PasswordSignInAsync(foundedUser, Input.Password!, Input.RememberLogin, lockoutOnFailure: true) 
+            var result = checkByEmail ? await _signInManager.PasswordSignInAsync(existedUser, Input.Password!, Input.RememberLogin, lockoutOnFailure: true) 
                 : await _signInManager.PasswordSignInAsync(Input.Username!, Input.Password!, Input.RememberLogin, lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
-                var user = foundedUser ?? await _userManager.FindByNameAsync(Input.Username!);
+                var user = existedUser ?? await _userManager.FindByNameAsync(Input.Username!);
                 await _events.RaiseAsync(new UserLoginSuccessEvent(user!.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
                 Telemetry.Metrics.UserLogin(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider);
 

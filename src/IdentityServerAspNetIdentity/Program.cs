@@ -25,7 +25,7 @@ try
 
     app.MapControllers();
 
-    app.MigrateDatabase().Run();
+    app.Run();
 }
 catch (Exception ex) when (ex.GetType().Name is not "StopTheHostException")
 {

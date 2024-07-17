@@ -11,7 +11,7 @@ public static class MigrationManager
         using (var scope = host.Services.CreateScope())
         {
             scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
+            scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>().Database.Migrate();
             scope.ServiceProvider.GetRequiredService<ApplicationUserDbContext>().Database.Migrate();
 
             using (var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>())

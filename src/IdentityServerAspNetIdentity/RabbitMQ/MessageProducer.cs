@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using NotificationService.API;
+﻿using InnoClinic.SharedModels.MQMessages.IdentityServer;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
 

@@ -1,4 +1,4 @@
-﻿using NotificationService.API;
+﻿using InnoClinic.SharedModels.MQMessages.IdentityServer;
 
 namespace IdentityServerAspNetIdentity.RabbitMQ;
 

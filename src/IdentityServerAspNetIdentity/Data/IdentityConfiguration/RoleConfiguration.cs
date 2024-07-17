@@ -12,18 +12,21 @@ public class RoleConfiguration : IEntityTypeConfiguration<IdentityRole>
             new IdentityRole
             {
                 Id = "FE2EBE31-6E9E-436F-A247-C431EC225231",
+                ConcurrencyStamp = "FE2EBE31-6E9E-436F-A247-C431EC225231",
                 Name = "Patient",
                 NormalizedName = "PATIENT"
             },
             new IdentityRole
             {
                 Id = "80719001-2BCD-4043-A9A7-4290D59ED73C",
+                ConcurrencyStamp = "80719001-2BCD-4043-A9A7-4290D59ED73C",
                 Name = "Doctor",
                 NormalizedName = "DOCTOR"
             },
             new IdentityRole
             {
                 Id = "C500EDA0-6BEA-4222-8689-B3924C070CA2",
+                ConcurrencyStamp = "C500EDA0-6BEA-4222-8689-B3924C070CA2",
                 Name = "Receptionist",
                 NormalizedName = "RECEPTIONIST"
             });
