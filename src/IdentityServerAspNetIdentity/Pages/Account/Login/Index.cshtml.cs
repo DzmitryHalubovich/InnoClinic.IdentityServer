@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Text.RegularExpressions;
 
 namespace IdentityServerAspNetIdentity.Pages.Login;
 
@@ -97,10 +98,30 @@ public class Index : PageModel
 
         if (ModelState.IsValid)
         {
-            var result = await _signInManager.PasswordSignInAsync(Input.Username!, Input.Password!, Input.RememberLogin, lockoutOnFailure: true);
+            //Custom login logic
+            //Check if user decided to use email as username
+            var checkByEmail = false;
+
+            if (Input.Username.Contains("@"))
+            {
+                checkByEmail = true;
+                var emailPattern = @"[\w]+@[\w]+\.[a-zA-Z]{2,}$";
+                var regex = new Regex(emailPattern);
+
+                if (!regex.IsMatch(Input.Username))
+                {
+                    ModelState.TryAddModelError("Email", "Invalid email");
+                    return Page();
+                }
+            }
+
+            var foundedUser = checkByEmail ? await _userManager.FindByEmailAsync(Input.Username) : null;
+            var result = checkByEmail ? await _signInManager.PasswordSignInAsync(foundedUser, Input.Password!, Input.RememberLogin, lockoutOnFailure: true) 
+                : await _signInManager.PasswordSignInAsync(Input.Username!, Input.Password!, Input.RememberLogin, lockoutOnFailure: true);
+
             if (result.Succeeded)
             {
-                var user = await _userManager.FindByNameAsync(Input.Username!);
+                var user = foundedUser ?? await _userManager.FindByNameAsync(Input.Username!);
                 await _events.RaiseAsync(new UserLoginSuccessEvent(user!.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
                 Telemetry.Metrics.UserLogin(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider);
 
