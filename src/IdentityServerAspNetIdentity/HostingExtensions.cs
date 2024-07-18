@@ -37,7 +37,7 @@ internal static class HostingExtensions
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireLowercase = false;
 
-                options.User.RequireUniqueEmail = false;
+                options.User.RequireUniqueEmail = true;
 
                 options.SignIn.RequireConfirmedEmail = true;
             })

@@ -55,7 +55,7 @@ public class Index : PageModel
         }
 
         var user = _mapper.Map<ApplicationUser>(input);
-        
+
         var result = await _userManager.CreateAsync(user, input.Password);
 
         if (!result.Succeeded)

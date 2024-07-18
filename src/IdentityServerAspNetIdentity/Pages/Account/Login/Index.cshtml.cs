@@ -23,7 +23,6 @@ public class Index : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IIdentityServerInteractionService _interaction;
-    private readonly IEventService _events;
     private readonly IAuthenticationSchemeProvider _schemeProvider;
     private readonly IIdentityProviderStore _identityProviderStore;
 
@@ -36,7 +35,6 @@ public class Index : PageModel
         IIdentityServerInteractionService interaction,
         IAuthenticationSchemeProvider schemeProvider,
         IIdentityProviderStore identityProviderStore,
-        IEventService events,
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager)
     {
@@ -45,7 +43,6 @@ public class Index : PageModel
         _interaction = interaction;
         _schemeProvider = schemeProvider;
         _identityProviderStore = identityProviderStore;
-        _events = events;
     }
 
     public async Task<IActionResult> OnGet(string? returnUrl)
@@ -98,79 +95,47 @@ public class Index : PageModel
 
         if (ModelState.IsValid)
         {
-            //Custom login logic
-            //Check if user decided to use email as username
-            var checkByEmail = false;
+            var user = await _userManager.FindByEmailAsync(Input.Email);
 
-            if (Input.Username.Contains("@"))
+            if (user is not null)
             {
-                checkByEmail = true;
-                var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-                var regex = new Regex(emailPattern);
+                var result = await _signInManager.PasswordSignInAsync(user, Input.Password!, Input.RememberLogin, lockoutOnFailure: true);
 
-                if (!regex.IsMatch(Input.Username))
+                if (result.Succeeded)
                 {
-                    await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials"));
-                    ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
-                    await BuildModelAsync(Input.ReturnUrl);
-                    return Page();
-                }
-            }
-
-            var existedUser = checkByEmail ? await _userManager.FindByEmailAsync(Input.Username) : null;
-
-            if (checkByEmail && existedUser is null)
-            {
-                await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials"));
-                ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
-                await BuildModelAsync(Input.ReturnUrl);
-                return Page();
-            }
-
-            var result = checkByEmail ? await _signInManager.PasswordSignInAsync(existedUser, Input.Password!, Input.RememberLogin, lockoutOnFailure: true) 
-                : await _signInManager.PasswordSignInAsync(Input.Username!, Input.Password!, Input.RememberLogin, lockoutOnFailure: true);
-
-            if (result.Succeeded)
-            {
-                var user = existedUser ?? await _userManager.FindByNameAsync(Input.Username!);
-                await _events.RaiseAsync(new UserLoginSuccessEvent(user!.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
-                Telemetry.Metrics.UserLogin(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider);
-
-                if (context != null)
-                {
-                    // This "can't happen", because if the ReturnUrl was null, then the context would be null
-                    ArgumentNullException.ThrowIfNull(Input.ReturnUrl, nameof(Input.ReturnUrl));
-
-                    if (context.IsNativeClient())
+                    if (context != null)
                     {
-                        // The client is native, so this change in how to
-                        // return the response is for better UX for the end user.
-                        return this.LoadingPage(Input.ReturnUrl);
+                        // This "can't happen", because if the ReturnUrl was null, then the context would be null
+                        ArgumentNullException.ThrowIfNull(Input.ReturnUrl, nameof(Input.ReturnUrl));
+
+                        if (context.IsNativeClient())
+                        {
+                            // The client is native, so this change in how to
+                            // return the response is for better UX for the end user.
+                            return this.LoadingPage(Input.ReturnUrl);
+                        }
+
+                        // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
+                        return Redirect(Input.ReturnUrl ?? "~/");
                     }
 
-                    // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                    return Redirect(Input.ReturnUrl ?? "~/");
-                }
-
-                // request for a local page
-                if (Url.IsLocalUrl(Input.ReturnUrl))
-                {
-                    return Redirect(Input.ReturnUrl);
-                }
-                else if (string.IsNullOrEmpty(Input.ReturnUrl))
-                {
-                    return Redirect("~/");
-                }
-                else
-                {
-                    // user might have clicked on a malicious link - should be logged
-                    throw new ArgumentException("invalid return URL");
+                    // request for a local page
+                    if (Url.IsLocalUrl(Input.ReturnUrl))
+                    {
+                        return Redirect(Input.ReturnUrl);
+                    }
+                    else if (string.IsNullOrEmpty(Input.ReturnUrl))
+                    {
+                        return Redirect("~/");
+                    }
+                    else
+                    {
+                        // user might have clicked on a malicious link - should be logged
+                        throw new ArgumentException("invalid return URL");
+                    }
                 }
             }
 
-            const string error = "invalid credentials";
-            await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, error, clientId:context?.Client.ClientId));
-            Telemetry.Metrics.UserLoginFailure(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider, error);
             ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
         }
 
@@ -189,7 +154,7 @@ public class Index : PageModel
         var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
         if (context?.IdP != null && await _schemeProvider.GetSchemeAsync(context.IdP) != null)
         {
-            var local = context.IdP == Duende.IdentityServer.IdentityServerConstants.LocalIdentityProvider;
+            var local = context.IdP == IdentityServerConstants.LocalIdentityProvider;
 
             // this is meant to short circuit the UI and only trigger the one external IdP
             View = new ViewModel
@@ -197,7 +162,7 @@ public class Index : PageModel
                 EnableLocalLogin = local,
             };
 
-            Input.Username = context.LoginHint;
+            Input.Email = context.LoginHint;
 
             if (!local)
             {
@@ -225,7 +190,6 @@ public class Index : PageModel
                 displayName: x.DisplayName ?? x.Scheme
             ));
         providers.AddRange(dynamicSchemes);
-
 
         var allowLocal = true;
         var client = context?.Client;

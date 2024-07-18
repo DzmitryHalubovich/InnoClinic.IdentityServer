@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
+using System.Threading.Channels;
 
 namespace IdentityServerAspNetIdentity.RabbitMQ;
 
@@ -18,11 +19,17 @@ public class MessageProducer : IMessageProducer
     {
         using var channel = _connection.Connection.CreateModel();
 
-        var queueName = "Registration";
-
-        var exchangeName = "email-confirm-queue";
+        var queueName = "email-confirm-queue";
+        var routigKey = "email.command.confirm";
+        var exchangeName = "registration";
 
         channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Direct);
+
+        channel.QueueDeclare(queue: queueName,
+                      durable: false,
+                      exclusive: false,
+                      autoDelete: false,
+                      arguments: null);
 
         channel.QueueBind(queue: queueName,
                           exchange: exchangeName,

@@ -6,6 +6,7 @@ public class MapperProfile : Profile
 {
     public MapperProfile()
     {
-        CreateMap<Pages.Account.Registration.InputModel, ApplicationUser>();
+        CreateMap<Pages.Account.Registration.InputModel, ApplicationUser>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
     }
 }
