@@ -3,9 +3,12 @@ using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using IdentityServerAspNetIdentity.Data;
 using IdentityServerAspNetIdentity.Data.Migrations;
+using IdentityServerAspNetIdentity.MassTransit;
 using IdentityServerAspNetIdentity.Models;
 using IdentityServerAspNetIdentity.Profile;
 using IdentityServerAspNetIdentity.RabbitMQ;
+using InnoClinic.SharedModels.MQMessages.Profiles;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -55,6 +58,9 @@ internal static class HostingExtensions
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
+                //Because this shit don't want to work in production without money. Default = true
+                options.KeyManagement.Enabled = false;
+
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                 options.EmitStaticAudienceClaim = true;
 
@@ -84,6 +90,35 @@ internal static class HostingExtensions
                 options.ClientSecret = builder.Configuration["GoogleClientSecret"];
             });
 
+
+        builder.Services.AddMassTransit(x =>
+        {
+            x.SetKebabCaseEndpointNameFormatter();
+            x.SetInMemorySagaRepositoryProvider();
+
+            var assembly = typeof(Program).Assembly;
+
+            x.AddConsumer<WorkerProfileCreatedConsumer>();
+
+            x.AddSagaStateMachines(assembly);
+            x.AddSagas(assembly);
+            x.AddActivities(assembly);
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host("localhost", "/", h =>
+                {
+                    h.Username("guest");
+                    h.Password("guest");
+                });
+
+                cfg.ReceiveEndpoint("worker-profile-created", queueConfigurator =>
+                {
+                    queueConfigurator.Consumer<WorkerProfileCreatedConsumer>(context);
+                });
+            });
+        });
+
         return builder.Build();
     }
     
@@ -104,7 +139,7 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
-        app.MigrateDatabase();
+        app.MigrateDatabaseAsync();
 
         return app;
     }

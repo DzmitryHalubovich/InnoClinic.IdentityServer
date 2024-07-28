@@ -5,17 +5,22 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<UserSecretsId>8ea91896-d388-43f2-aa18-0efe79278bfd</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerfileContext>..\..</DockerfileContext>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
 		<PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="7.0.4" />
 		<PackageReference Include="Duende.IdentityServer.EntityFramework" Version="7.0.5" />
-		<PackageReference Include="InnoClinic.SharedModels" Version="1.4.0" />
+		<PackageReference Include="InnoClinic.SharedModels" Version="1.7.0" />
+		<PackageReference Include="MassTransit.RabbitMQ" Version="8.2.3" />
 
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.3" />
 
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.7" />
+
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
 
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 

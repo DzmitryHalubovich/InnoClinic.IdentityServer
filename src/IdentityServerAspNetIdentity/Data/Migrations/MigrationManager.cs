@@ -1,22 +1,25 @@
 ﻿using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace IdentityServerAspNetIdentity.Data.Migrations;
 
 public static class MigrationManager
 {
-    public static IHost MigrateDatabase(this IHost host)
+    private static int _retryForAvailability = 0;
+
+    public static async Task<IHost> MigrateDatabaseAsync(this IHost host)
     {
         using (var scope = host.Services.CreateScope())
         {
-            scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-            scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>().Database.Migrate();
-            scope.ServiceProvider.GetRequiredService<ApplicationUserDbContext>().Database.Migrate();
-
-            using (var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>())
+            try
             {
-                try
+                scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+                scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>().Database.Migrate();
+                scope.ServiceProvider.GetRequiredService<ApplicationUserDbContext>().Database.Migrate();
+
+                using (var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>())
                 {
                     context.Database.Migrate();
 
@@ -50,10 +53,21 @@ public static class MigrationManager
                         context.SaveChanges();
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                if (_retryForAvailability >= 6)
                 {
                     throw;
                 }
+
+                _retryForAvailability++;
+
+                Log.Warning(ex.Message);
+
+                await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, _retryForAvailability)));
+
+                await MigrateDatabaseAsync(host);
             }
         }
 

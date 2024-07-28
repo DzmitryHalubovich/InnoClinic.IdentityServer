@@ -1,7 +1,7 @@
 using AutoMapper;
 using IdentityServerAspNetIdentity.Models;
-using IdentityServerAspNetIdentity.RabbitMQ;
 using InnoClinic.SharedModels.MQMessages.IdentityServer;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +16,12 @@ public class Index : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
 
-    private readonly IMessageProducer _messageProducer;
+    private readonly IPublishEndpoint _messageProducer;
     private readonly IMapper _mapper;
 
     public Index(
         UserManager<ApplicationUser> userManager,
-        IMessageProducer messageProducer,
+        IPublishEndpoint messageProducer,
         IMapper mapper)
     {
         _messageProducer = messageProducer;
@@ -80,7 +80,7 @@ public class Index : PageModel
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var confirmationLink = Url.Page("/Account/ConfirmEmail/Index", pageHandler: null, new { token, email = user.Email }, protocol: Request.Scheme);
 
-        _messageProducer.SendEmailConfirmationMessage(new EmailConfirmationMessage()
+        await _messageProducer.Publish<EmailConfirmationMessage>(new ()
         {
             Email = user.Email,
             ConfirmationLink = confirmationLink

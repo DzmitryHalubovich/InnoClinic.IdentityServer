@@ -17,6 +17,9 @@ public static class Config
         {
             new ApiScope("offices.api"),
             new ApiScope("profiles.api"),
+            new ApiScope("services.api"),
+            new ApiScope("appointments.api"),
+            new ApiScope("documents.api"),
             new ApiScope(IdentityServerConstants.LocalApi.ScopeName)
         };
 
@@ -33,6 +36,22 @@ public static class Config
             Scopes = new List<string> { "profiles.api" },
             ApiSecrets = new List<Secret> { new Secret("ScopeSecret".Sha256()) },
             UserClaims = new List<string> { "role" }
+        },
+        new ApiResource("servicesApi")
+        {
+            Scopes = new List<string> { "services.api" },
+            ApiSecrets = new List<Secret> { new Secret("ScopeSecret".Sha256()) },
+            UserClaims = new List<string> { "role" }
+        },
+        new ApiResource("appointmentsApi")
+        {
+            Scopes = new List<string> { "appointments.api" },
+            ApiSecrets = new List<Secret> { new Secret("ScopeSecret".Sha256()) },
+            UserClaims = new List<string> { "role" }
+        },
+        new ApiResource("documentsApi")
+        {
+            Scopes = new List<string> { "documents.api" }
         }
     };
 
@@ -48,7 +67,16 @@ public static class Config
                 AllowedGrantTypes = GrantTypes.ClientCredentials,
                 ClientSecrets = { new Secret("511536EF-F270-4058-80CA-1C89C192F69A".Sha256()) },
 
-                AllowedScopes = { "offices.api" }
+                AllowedScopes = 
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    "offices.api",
+                    "profiles.api",
+                    "services.api",
+                    "appointments.api",
+                    "documents.api"
+                }
             },
             new Client
             {
@@ -93,7 +121,9 @@ public static class Config
                     IdentityServerConstants.StandardScopes.Profile,
                     //IdentityServerConstants.LocalApi.ScopeName,
                     "offices.api",
-                    "profiles.api"
+                    "profiles.api",
+                    "services.api",
+                    "appointments.api"
                 }
             }
         };
