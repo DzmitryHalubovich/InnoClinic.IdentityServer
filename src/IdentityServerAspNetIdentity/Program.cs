@@ -1,5 +1,4 @@
 ﻿using IdentityServerAspNetIdentity;
-using IdentityServerAspNetIdentity.Data.Migrations;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -11,8 +10,6 @@ Log.Information("Starting up");
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-
-    //builder.Services.AddControllers();
 
     builder.Host.UseSerilog((ctx, lc) => lc
         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}")
